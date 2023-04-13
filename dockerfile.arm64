@@ -1,0 +1,54 @@
+#FROM --platform=$BUILDPLATFORM ros:foxy AS build
+#FROM ros:foxy AS build
+
+#WORKDIR /my_ws
+
+#SHELL ["/bin/bash", "-c"]
+#RUN source /opt/ros/foxy/setup.bash
+#RUN mkdir src
+
+#WORKDIR /my_ws/src
+#RUN git clone https://github.com/bjoernellens1/segway_msgs
+#RUN git clone https://github.com/bjoernellens1/segwayrmp -b x86
+
+#WORKDIR /my_ws
+#RUN apt update && apt -y install gcc make gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
+#RUN . /opt/ros/$ROS_DISTRO/setup.sh && \
+#    colcon build --symlink-install
+#RUN echo "source /build/install/setup.bash" >> /root/.bashrc
+
+#FROM ros:foxy AS run-run-stage
+#COPY --from=build /my_ws/. /my_ws
+
+#CMD /bin/bash
+
+FROM ros:humble
+
+# Install any additional packages you need
+#RUN apt-get update && apt-get install -y \
+#    <package1> \
+#    <package2> \
+#    && rm -rf /var/lib/apt/lists/*
+
+# Create a non-root user to run the container
+RUN groupadd -r ros && useradd -r -g ros ros
+RUN mkdir -p /home/ros
+RUN chown -R ros /home/ros
+USER ros
+
+# Create a workspace directory and copy your project into it
+RUN mkdir -p /home/ros/workspace/src
+WORKDIR /home/ros/workspace/src
+RUN git clone https://github.com/bjoernellens1/segway_msgs
+RUN git clone https://github.com/bjoernellens1/segwayrmp -b humble-arm64
+
+
+# Build the workspace
+RUN . /opt/ros/humble/setup.sh && \
+    colcon build
+
+# Set the entrypoint to the workspace and run the shell
+ENTRYPOINT ["/bin/bash", "-c", ". /opt/ros/humble/setup.sh && . install/setup.sh && cd src && /bin/bash"]
+
+# Set the default command to start a new shell in the workspace
+CMD ["/bin/bash"]
