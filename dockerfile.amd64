@@ -31,28 +31,40 @@ FROM ros:humble
 #    && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user to run the container
-RUN groupadd -r ros && useradd -r -g ros ros
-USER ros
+# RUN groupadd -r ros && useradd -r -g ros ros
+# USER ros
 
 # Create a workspace directory and copy your project into it
-RUN mkdir -p /home/ros/workspace/src
-WORKDIR /home/ros/workspace/src
-RUN git clone https://github.com/bjoernellens1/segway_msgs
-RUN git clone https://github.com/bjoernellens1/segwayrmp -b x86
+# RUN mkdir -p /home/ros/workspace/src
+# WORKDIR /home/ros/workspace/src
+# RUN git clone https://github.com/bjoernellens1/segway_msgs
+# RUN git clone https://github.com/bjoernellens1/segwayrmp -b x86
 
+RUN mkdir -p /root/workspace/src
+WORKDIR /root/workspace/src
+RUN git clone https://github.com/bjoernellens1/segway_msgs
+RUN git clone https://github.com/bjoernellens1/segwayrmp -b humble
+RUN git clone https://github.com/bjoernellens1/rmp220_teleop
 
 # Build the workspace
-WORKDIR /home/ros/workspace
+# WORKDIR /home/ros/workspace
+# RUN . /opt/ros/humble/setup.sh && \
+#     colcon build
+WORKDIR /root/workspace
 RUN . /opt/ros/humble/setup.sh && \
     colcon build
 
+RUN apt update && apt install -y ros-humble-joy
+RUN apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Set the entrypoint to the workspace and run the shell
 #ENTRYPOINT ["/bin/bash", "-c", ". /opt/ros/humble/setup.sh && . install/setup.sh && /bin/bash"]
 
 # Set up the ROS environment
-RUN echo "source /opt/ros/humble/setup.bash" >> /home/ros/.bashrc && \
-    echo "source /home/ros/workspace/install/setup.bash" >> /home/ros/.bashrc
+# RUN echo "source /opt/ros/humble/setup.bash" >> /home/ros/.bashrc && \
+#     echo "source /home/ros/workspace/install/setup.bash" >> /home/ros/.bashrc
+RUN echo "source /opt/ros/humble/setup.bash" >> /root/.bashrc && \
+    echo "source /root/workspace/install/setup.bash" >> /root/.bashrc
 
 # Set the default command to start a new shell in the workspace
 CMD ["/bin/bash"]
