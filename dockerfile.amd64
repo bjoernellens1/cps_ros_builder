@@ -42,11 +42,17 @@ RUN git clone https://github.com/bjoernellens1/segwayrmp -b x86
 
 
 # Build the workspace
+WORKDIR /home/ros/workspace
 RUN . /opt/ros/humble/setup.sh && \
     colcon build
 
+
 # Set the entrypoint to the workspace and run the shell
-ENTRYPOINT ["/bin/bash", "-c", ". /opt/ros/humble/setup.sh && . install/setup.sh && cd src && /bin/bash"]
+#ENTRYPOINT ["/bin/bash", "-c", ". /opt/ros/humble/setup.sh && . install/setup.sh && /bin/bash"]
+
+# Set up the ROS environment
+RUN echo "source /opt/ros/humble/setup.bash" >> /home/ros/.bashrc && \
+    echo "source /home/ros/workspace/install/setup.bash" >> /home/ros/.bashrc
 
 # Set the default command to start a new shell in the workspace
 CMD ["/bin/bash"]
