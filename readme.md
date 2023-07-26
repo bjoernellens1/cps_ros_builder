@@ -10,3 +10,13 @@ docker buildx build --platform linux/arm64 --build-arg GHCR_TOKEN=<your_token> -
 
 or
 docker buildx build --platform linux/arm64 --build-arg GHCR_TOKEN=<your_token> -f ./dockerfile.arm64 -t ghcr.io/bjoernellens1/ros:humble-arm64 . --push
+
+
+For launching robot:
+docker run -d --restart always -it --name humble --privileged --net host -v /dev:/dev ghcr.io/bjoernellens1/ros:humble-arm64
+
+or 
+docker exec -it humble /bin/bash
+
+and inside container:
+ros2 launch rmp220_teleop robot.launch.py
